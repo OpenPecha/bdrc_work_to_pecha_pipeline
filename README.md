@@ -8,8 +8,8 @@
   <br>
 </h1>
 
-## _Project Name_
-_The project name should match its code's capability so that new users can easily understand what it does._
+## bdrc_work_download
+_BDRC Work Download_ is a tool for downloading works from the [BDRC](https://bdrc.io) catalog.
 
 ## Owner(s)
 
@@ -56,16 +56,16 @@ Get started with _Project Name_ by _(write the first step a user needs to start 
 
 
 ### Install _Project Name_
-1. _Write the step here._ 
+1. _Write the step here._
 
-    _Explanatory text here_ 
-    
+    _Explanatory text here_
+
     _(Optional: Include a code sample or screenshot that helps your users complete this step.)_
 
 2. _Write the step here._
- 
-    a. _Substep 1_ 
-    
+
+    a. _Substep 1_
+
     b. _Substep 2_
 
 
