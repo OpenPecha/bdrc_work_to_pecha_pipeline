@@ -8,8 +8,8 @@
   <br>
 </h1>
 
-## bdrc_work_download
-_BDRC Work Download_ is a tool for downloading works from the [BDRC](https://bdrc.io) catalog.
+## bdrc_work_to_pecha_pipeline
+_BDRC Work to Pecha Pipeline_ is a tool for downloading works from the [BDRC](https://bdrc.io) catalog.
 
 ## Owner(s)
 
