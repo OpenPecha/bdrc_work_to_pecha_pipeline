@@ -32,4 +32,4 @@ jobs:
       run: PYTHONPATH=src pytest
 
     - name: Test Coverage
-      run: PYTHONPATH=src pytest --cov bdrc_work_download
+      run: PYTHONPATH=src pytest --cov bdrc_work_to_pecha_pipeline

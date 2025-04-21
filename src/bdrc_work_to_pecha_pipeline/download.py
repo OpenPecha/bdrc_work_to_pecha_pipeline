@@ -2,7 +2,7 @@ import hashlib
 from pathlib import Path
 from typing import List, Optional
 
-from bdrc_work_download.config import OCR_OUTPUT_BUCKET, s3_client
+from bdrc_work_to_pecha_pipeline.config import OCR_OUTPUT_BUCKET, s3_client
 
 
 def get_hash(work_id):
@@ -55,7 +55,7 @@ def download_gb_ocr_files(work_id: str, image_group_id: Optional[str], key: str)
     else:
         download_path = Path(f"./data/{work_id}/")
         download_path.mkdir(parents=True, exist_ok=True)
-        local_file_path = f"{download_path}/ocr_import_{file_name}"
+        local_file_path = f"{download_path}/{file_name}"
 
     if Path(local_file_path).exists():
         return
@@ -88,7 +88,7 @@ def download_gv_ocr_files(work_id: str, image_group_id: Optional[str], key: str)
     else:
         download_path = Path(f"./data/{work_id}/")
         download_path.mkdir(parents=True, exist_ok=True)
-        local_file_path = f"{download_path}/ocr_import_{file_name}"
+        local_file_path = f"{download_path}/{file_name}"
 
     if Path(local_file_path).exists():
         return
