@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 
 import requests
@@ -11,12 +12,15 @@ from bdrc_work_to_pecha_pipeline.download import (
     get_s3_keys,
     get_s3_prefix,
 )
-from bdrc_work_to_pecha_pipeline.metadata import (
-    get_buda_data,
-    get_metadata,
-    get_ocr_import_info,
-)
+from bdrc_work_to_pecha_pipeline.metadata import get_metadata
 from bdrc_work_to_pecha_pipeline.utils import zip_folder
+
+# Set up the logger
+logging.basicConfig(
+    filename="pecha_creation.log",  # Log file path
+    level=logging.INFO,  # Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    format="%(asctime)s - %(levelname)s - %(message)s",  # Log message format
+)
 
 
 class OcrEngine:
@@ -54,8 +58,8 @@ def generate_metadata(work_path: Path, ocr_engine: str, batch_number: str) -> di
     """
     Prepare metadata from the downloaded OCR files.
     """
-    get_ocr_import_info(work_path, ocr_engine, batch_number)
-    get_buda_data(work_path)
+    # get_ocr_import_info(work_path, ocr_engine, batch_number)
+    # get_buda_data(work_path)
     metadata = get_metadata(work_path)
 
     if "long_title" not in metadata:
@@ -82,20 +86,30 @@ def create_pecha(metadata: dict, text_file: Path = None, data_file: Path = None)
         files["data"] = (data_file.name, open(data_file, "rb"), "application/zip")
 
     try:
-        print("Uploading Pecha to OpenPecha API...")
+        logging.info("Uploading Pecha to OpenPecha API...")
+
         response = requests.post(url, data=form_data, files=files)
-        print(f"API response code: {response.status_code}")
+        logging.info(f"API response code: {response.status_code}")
 
         if response.ok:
-            print("✅ Pecha created successfully!")
-            print(response.json())
+            logging.info("✅ Pecha created successfully!")
+            response_json = response.json()
+            pecha_id = response_json.get("id")
+            title = response_json.get("title")
+
+            # Log the work_id and pecha_id on successful creation
+            work_id = metadata.get("document_id")
+            logging.info(f"Work ID: {work_id}, Pecha ID: {pecha_id}, Title: {title}")
+            logging.info(
+                "Pecha details: %s", response_json
+            )  # Optionally log the full response
         else:
-            print("❌ Failed to create Pecha")
-            print(response.text)
+            logging.error("❌ Failed to create Pecha")
+            logging.error("Error response: %s", response.text)
     except Exception as e:
-        print(f"❌ Error during API request: {e}")
+        logging.error(f"❌ Error during API request: {e}")
         if "response" in locals():
-            print(response.text)
+            logging.error("Error response: %s", response.text)
 
 
 def run_pipeline(
@@ -124,7 +138,7 @@ def run_pipeline(
 
     # Step 4: Upload to OpenPecha
     print("☁️ Uploading to OpenPecha API...")
-    create_pecha(metadata, data_file=zip_path)
+    create_pecha(metadata, data_file=Path(zip_path))
 
 
 if __name__ == "__main__":
