@@ -61,9 +61,6 @@ def generate_metadata(work_path: Path, ocr_engine: str, batch_number: str) -> di
     get_buda_data(work_path)
     metadata = get_metadata(work_path)
 
-    if "long_title" not in metadata:
-        metadata["long_title"] = metadata.get("title", {"bo": "Unknown"})
-
     return metadata
 
 
