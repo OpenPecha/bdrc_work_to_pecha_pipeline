@@ -17,6 +17,7 @@ from bdrc_work_to_pecha_pipeline.metadata import (
     get_metadata,
     get_ocr_import_info,
 )
+from bdrc_work_to_pecha_pipeline.pecha_registry import register_pecha
 from bdrc_work_to_pecha_pipeline.utils import zip_folder
 
 logger = get_logger(__name__)
@@ -99,6 +100,17 @@ def create_pecha(metadata: dict, text_file: Path = None, data_file: Path = None)
             logger.info(
                 "Pecha details: %s", response_json
             )  # Optionally log the full response
+
+            # Register this pecha as the first version for this work_id if applicable
+            # This will only register if it's the first pecha for this work_id
+            if work_id and pecha_id:
+                register_pecha(work_id, pecha_id)
+
+                # Log whether this pecha is a version of another pecha
+                if "version_of" in metadata:
+                    logger.info(f"This pecha is a version of {metadata['version_of']}")
+                else:
+                    logger.info(f"This is the first pecha created for work {work_id}")
         else:
             logger.error("❌ Failed to create Pecha")
             logger.error("Error response: %s", response.text)
@@ -122,7 +134,7 @@ def run_pipeline(
 
     # Step 1: Download OCR files
     logger.info("📥 Downloading OCR data...")
-    download_ocr_data(work_id, batch_number, ocr_engine)
+    # download_ocr_data(work_id, batch_number, ocr_engine)
 
     # Step 2: Generate metadata
     logger.info("📝 Generating metadata...")

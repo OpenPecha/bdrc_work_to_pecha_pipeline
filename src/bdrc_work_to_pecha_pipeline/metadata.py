@@ -5,6 +5,8 @@ from typing import Any, Dict, Optional
 from openpecha.buda.api import get_buda_scan_info
 from openpecha.utils import read_json
 
+from bdrc_work_to_pecha_pipeline.pecha_registry import get_first_pecha_for_work
+
 
 def extract_metadata_for_work(work_path: Path) -> Dict[str, Any]:
     metadata = {}
@@ -29,11 +31,12 @@ def format_metadata_for_op_api(metadata: Dict[str, Any]) -> Dict[str, Any]:
     """
     buda_data = metadata.get("buda_data", {}).get("source_metadata", {})
     ocr_info = metadata.get("ocr_import_info", {})
+    work_id = ocr_info.get("bdrc_scan_id")
 
     formatted_data: Dict[str, Any] = {
         "source_type": "bdrc",
         "bdrc": metadata,
-        "document_id": ocr_info.get("bdrc_scan_id"),
+        "document_id": work_id,
         "language": (
             buda_data.get("languages", [None])[0]
             if buda_data.get("languages")
@@ -41,6 +44,12 @@ def format_metadata_for_op_api(metadata: Dict[str, Any]) -> Dict[str, Any]:
         ),
         "source_url": buda_data.get("id"),
     }
+
+    # Check if this is not the first pecha for this work
+    first_pecha = get_first_pecha_for_work(work_id) if work_id else None
+    if first_pecha:
+        formatted_data["version_of"] = first_pecha
+        formatted_data["bdrc"]["ocr_import_info"]["version_of"] = first_pecha
 
     author: Optional[str] = buda_data.get("author")
     if author:
