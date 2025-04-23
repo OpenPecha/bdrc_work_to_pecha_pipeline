@@ -31,12 +31,15 @@ def format_metadata_for_op_api(metadata: Dict[str, Any]) -> Dict[str, Any]:
     """
     buda_data = metadata.get("buda_data", {}).get("source_metadata", {})
     ocr_info = metadata.get("ocr_import_info", {})
-    work_id = ocr_info.get("bdrc_scan_id")
+    ocr_engine = ocr_info.get("software", "")
+    batch_number = ocr_info.get("batch", "")
+    work_id = ocr_info.get("bdrc_scan_id", "")
+    document_id = f"{work_id}_{ocr_engine}_{batch_number}"
 
     formatted_data: Dict[str, Any] = {
         "source_type": "bdrc",
         "bdrc": metadata,
-        "document_id": work_id,
+        "document_id": document_id,
         "language": (
             buda_data.get("languages", [None])[0]
             if buda_data.get("languages")

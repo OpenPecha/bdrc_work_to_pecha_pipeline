@@ -95,7 +95,7 @@ def create_pecha(metadata: dict, text_file: Path = None, data_file: Path = None)
             title = response_json.get("title")
 
             # Log the work_id and pecha_id on successful creation
-            work_id = metadata.get("document_id")
+            work_id = metadata["bdrc"]["ocr_import_info"]["bdrc_scan_id"]
             logger.info(f"Work ID: {work_id}, Pecha ID: {pecha_id}, Title: {title}")
             logger.info(
                 "Pecha details: %s", response_json
@@ -134,7 +134,7 @@ def run_pipeline(
 
     # Step 1: Download OCR files
     logger.info("📥 Downloading OCR data...")
-    # download_ocr_data(work_id, batch_number, ocr_engine)
+    download_ocr_data(work_id, batch_number, ocr_engine)
 
     # Step 2: Generate metadata
     logger.info("📝 Generating metadata...")
