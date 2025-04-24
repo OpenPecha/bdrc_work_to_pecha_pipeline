@@ -1,9 +1,69 @@
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
-from openpecha.bdrc_utils import extract_metadata_for_work, format_metadata_for_op_api
 from openpecha.buda.api import get_buda_scan_info
+from openpecha.utils import read_json
+
+from bdrc_work_to_pecha_pipeline.pecha_registry import get_first_pecha_for_work
+
+
+def extract_metadata_for_work(work_path: Path) -> Dict[str, Any]:
+    metadata = {}
+    ocr_import_info = read_json(work_path / "ocr_import_info.json")
+    metadata["ocr_import_info"] = ocr_import_info
+    buda_data = read_json(work_path / "buda_data.json")
+    metadata["buda_data"] = buda_data
+
+    return metadata
+
+
+def format_metadata_for_op_api(metadata: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Formats BDRC metadata into a structure suitable for the OpenPecha API.
+    Excludes 'author' and 'title' keys if their corresponding values are None.
+
+    Args:
+        metadata: A dictionary containing the raw BDRC metadata.
+
+    Returns:
+        A dictionary with the formatted metadata.
+    """
+    buda_data = metadata.get("buda_data", {}).get("source_metadata", {})
+    ocr_info = metadata.get("ocr_import_info", {})
+    ocr_engine = ocr_info.get("software", "")
+    batch_number = ocr_info.get("batch", "")
+    work_id = ocr_info.get("bdrc_scan_id", "")
+    document_id = f"{work_id}_{ocr_engine}_{batch_number}"
+
+    formatted_data: Dict[str, Any] = {
+        "source_type": "bdrc",
+        "bdrc": metadata,
+        "document_id": document_id,
+        "language": (
+            buda_data.get("languages", [None])[0]
+            if buda_data.get("languages")
+            else None
+        ),
+        "source_url": buda_data.get("id"),
+    }
+
+    # Check if this is not the first pecha for this work
+    first_pecha = get_first_pecha_for_work(work_id) if work_id else None
+    if first_pecha:
+        formatted_data["version_of"] = first_pecha
+        formatted_data["bdrc"]["ocr_import_info"]["version_of"] = first_pecha
+
+    author: Optional[str] = buda_data.get("author")
+    if author:
+        formatted_data["author"] = {"bo": author}
+
+    title: Optional[str] = buda_data.get("title")
+    if title:
+        formatted_data["title"] = {"bo": title}
+        formatted_data["long_title"] = {"bo": title}
+
+    return formatted_data
 
 
 def get_ocr_import_info(work_id_path, ocr_engine, batch_number):
